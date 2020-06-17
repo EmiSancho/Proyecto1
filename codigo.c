@@ -7,6 +7,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
+//--------------- DEFINICION DE ESTRUCTURAS
 
 typedef struct nodoEstudiante nodoEstudiante;
 typedef struct nodoRecurso nodoRecurso;
@@ -63,6 +66,12 @@ typedef struct sala
 	int calificacion;
 }sala;
 
+struct nodoSala
+{	
+	sala sala;
+	nodoSala *siguiente;
+};
+
 typedef struct listaSalas
 {
 	nodoSala *inicio;	
@@ -90,24 +99,56 @@ listaSalas *listaSalasNueva(){
 	return L;
 }
 
-void insertaSala(listaSalas *L, sala s){
-	nodoSala *n, *aux;
-	if(L->inicio == NULL){
-		L->inicio = (nodoSala*)mallo(sizeof(nodoSala));
-		L->inicio->sala = s;
-		L->inicio->siguiente=NULL;
+//--------------- INSERCIONES
+
+void insertarRecurso(listaRecursos *R, char recurso[15]){
+	nodoRecurso *n, *aux;
+	if(R->inicio == NULL){
+		R->inicio = (nodoRecurso*)malloc(sizeof(nodoRecurso));
+		strcpy(R->inicio->recurso, recurso);
+		R->inicio->siguiente = NULL;
 		return;
+
 	}else{
-		n = L->inicio;
+		n = R->inicio;
 		while(n!=NULL){
 			aux = n;
 			n = n->siguiente;
 		}
 	}
 
+	aux->siguiente = (nodoRecurso*)malloc(sizeof(nodoRecurso));
+	aux->siguiente->siguiente = NULL;
+	strcpy(aux->siguiente->recurso, recurso);
+	
+}
+
+void insertarSala(listaSalas *L, sala s){
+	nodoSala *n, *aux;
+
+	if(L->inicio == NULL){
+		L->inicio = (nodoSala*)malloc(sizeof(nodoSala));
+		L->inicio->sala = s;
+		L->inicio->siguiente=NULL;
+		return;
+
+	}else{
+		n = L->inicio;
+		while(n!=NULL){
+			if(strcmp(n->sala.id,s.id) == 0 ){
+				printf("\nESTA SALA YA ESTA REGISTRADA\n");
+				return;
+			}else{
+				aux = n;
+				n = n->siguiente;
+			}
+		}
 	aux->siguiente = (nodoSala*)malloc(sizeof(nodoSala));
 	aux->siguiente->siguiente = NULL;
 	aux->siguiente->sala = s;
+
+	}
+	
 }
 
 void insertarEstudiante(listaEstudiantes *L, estudiante e){
@@ -136,6 +177,24 @@ void insertarEstudiante(listaEstudiantes *L, estudiante e){
 	}
 }
 
+//--------------- IMPRESIONES
+
+void mostrarRecursos(listaRecursos *R){
+	printf("Recursos: ");
+	for(nodoRecurso *i = R->inicio; i!=NULL; i = i->siguiente){
+		printf("%s ", i->recurso);
+	}
+	printf("\n");
+}
+
+void mostrarSalas(listaSalas *S){
+	printf("La lista de salas es:\n");
+	for(nodoSala *i = S->inicio; i!=NULL; i = i->siguiente){
+		printf("Id: %s, Ubicacion: %s, Capacidad: %i, Estado: %i, Calificacion: %i,", i->sala.id, i->sala.ubicacion, i->sala.capMaxima, i->sala.estado, i->sala.calificacion );
+		mostrarRecursos(i->sala.recursos);
+	}
+}
+
 void mostrarEstudiantes(listaEstudiantes *L){
 	
 	printf("La listaEstudiantes de estudiantes es:\n");
@@ -146,6 +205,8 @@ void mostrarEstudiantes(listaEstudiantes *L){
 	}
 	printf("\n");
 }
+
+//--------------- CONSULTAS
 
 void consultarEstudiante(listaEstudiantes *L, int c){
 	nodoEstudiante *aux = L->inicio;
@@ -159,11 +220,22 @@ void consultarEstudiante(listaEstudiantes *L, int c){
 	printf("El estudiante no esta registrado\n");
 }
 
+//--------------- MAIN Y PRUEBAS
+
 int main() {
 	int accion;
 	listaEstudiantes *L;
+	listaRecursos *R;
+	listaSalas *S;
+
 	L = listaEstudiantesNueva();
-	estudiante temp;
+	R = listaRecursosNueva();
+	S = listaSalasNueva();
+
+	estudiante tempEstudiante;
+	sala tempSala;
+	char tempRecurso[15];
+
 
 	//------------------------------------
 	estudiante p1 = {20201,"Gloria Delgado-Prichett","Estilismo", "gloria@gmail.com",89490000,100};			
@@ -186,6 +258,30 @@ int main() {
 	insertarEstudiante(L,p8);
 	insertarEstudiante(L,p9);
 	insertarEstudiante(L,p10);
+
+
+	sala s1 = {"SAL-001", "Contiguo puerta 1", 11, R, 0,100};
+	sala s2 = {"SAL-002", "Contiguo puerta 2", 12, R, 0,100};
+	sala s3 = {"SAL-003", "Contiguo puerta 3", 13, R, 0,100};
+	sala s4 = {"SAL-004", "Contiguo puerta 4", 14, R, 0,100};
+	sala s5 = {"SAL-005", "Contiguo puerta 5", 15, R, 0,100};
+	sala s6 = {"SAL-006", "Contiguo puerta 6", 16, R, 0,100};
+	sala s7 = {"SAL-007", "Contiguo puerta 7", 17, R, 0,100};
+	sala s8 = {"SAL-008", "Contiguo puerta 8", 18, R, 0,100};
+	sala s9 = {"SAL-009", "Contiguo puerta 9", 19, R, 0,100};
+	sala s10 = {"SAL-010", "Contiguo puerta 10", 20, R, 0,100};
+	insertarSala(S,s1);
+	insertarSala(S,s2);
+	insertarSala(S,s3);
+	insertarSala(S,s4);
+	insertarSala(S,s5);
+	insertarSala(S,s6);
+	insertarSala(S,s7);
+	insertarSala(S,s8);
+	insertarSala(S,s9);
+	insertarSala(S,s10);
+
+
 	//------------------------------------
 
 
@@ -194,37 +290,39 @@ int main() {
 		printf("1\t Ingresar nuevo estudiante.\n");
 		printf("2\t Consultar estudiante por carnet.\n");
 		printf("3\t Mostrar lista de estudiantes.\n");
+		printf("4\t Ingresar nueva sala de estudio.\n");
+		printf("5\t Mostrar lista de salas.\n");
 		printf("0\t Salir.\n");
 		
 		printf("Seleccione una accion a realizar: ");
 		scanf("%i", &accion);
 
-		if(accion == 0 || accion>3){
+		if(accion == 0 || accion>5){
 			break;
 		}
 		if(accion == 1){
 			printf("\tInserte del NOMBRE del estudiante: ");
-			fgets(temp.nombre, 50, stdin);
-			scanf("%[^\n]", temp.nombre);
+			fgets(tempEstudiante.nombre, 50, stdin);
+			scanf("%[^\n]", tempEstudiante.nombre);
 			
 			printf("\tInserte del CARNET del estudiante: ");
-			scanf("%i", &temp.carnet);
+			scanf("%i", &tempEstudiante.carnet);
 			
 			printf("\tInserte la CARRERA del estudiante: ");
-			fgets(temp.carrera, 50, stdin);
-			scanf("%[^\n]", temp.carrera);
+			fgets(tempEstudiante.carrera, 50, stdin);
+			scanf("%[^\n]", tempEstudiante.carrera);
 			
 
 			printf("\tInserte el EMAIL del estudiante: ");
-			fgets(temp.email, 50, stdin);
-			scanf("%49s", temp.email);
+			fgets(tempEstudiante.email, 50, stdin);
+			scanf("%49s", tempEstudiante.email);
 			
 			printf("\tInserte el NUMERO DE TELEFONO del estudiante: ");
-			scanf("%i", &temp.telefono);
+			scanf("%i", &tempEstudiante.telefono);
 			
-			temp.calificacion =100;
+			tempEstudiante.calificacion =100;
 
-			insertarEstudiante(L,temp);			
+			insertarEstudiante(L,tempEstudiante);			
 		}
 
 		if(accion == 2){
@@ -236,6 +334,45 @@ int main() {
 
 		if(accion == 3){
 			mostrarEstudiantes(L);	
+		}
+
+		if(accion == 4){
+			printf("\tInserte del ID de la sala: ");
+			scanf("%s", tempSala.id);
+			
+			printf("\tInserte la UBICACION de la sala: ");
+			fgets(tempSala.ubicacion, 50, stdin);
+			scanf("%[^\n]", tempSala.ubicacion);
+			
+			printf("\tInserte la CAPACIDAD MAXIMA de la sala: ");
+			scanf("%i", &tempSala.capMaxima);
+			
+			tempSala.estado = 0;
+			tempSala.calificacion = 100;
+
+			while(free){
+				printf("\n \t1 \tAgregar recurso a la sala\n");
+				printf("\t0 \tSalir\n");
+				printf("\tSeleccione una accion a realizar: ");
+				scanf("%i", &accion);
+
+				if(accion == 1){
+					printf("\n\tNombre del recurso: ");
+					fgets(tempRecurso, 50, stdin);
+					scanf("%[^\n]", tempRecurso);
+					insertarRecurso(R, tempRecurso);
+				}
+				if(accion != 1){
+					break;
+				}
+			}	
+
+			tempSala.recursos = R;
+			insertarSala(S,tempSala);	
+		}
+
+		if(accion == 5){
+			mostrarSalas(S);
 		}
 
 	}

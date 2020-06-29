@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>     
 
 //--------------- DEFINICION DE ESTRUCTURAS
 
@@ -47,7 +48,7 @@ typedef struct hora
 
 typedef struct nodoRecurso
 {
-	char recurso[15];
+	char recurso[50];
 	nodoRecurso *siguiente;
 }nodoRecurso;
 
@@ -77,6 +78,38 @@ typedef struct listaSalas
 	nodoSala *inicio;	
 }listaSalas;
 
+typedef struct nodoReserva nodoReserva;
+
+typedef struct hora
+{
+	int hora;
+	int minutos;
+}hora;
+
+typedef struct fecha
+{
+	int dia;
+	int mes;
+	int ano;
+}fecha;
+
+struct nodoReserva
+{
+	fecha fecha;
+	hora horaInicio;
+	hora horaFinal;
+	int capacidadMinima;
+	char recurso[50];
+	int prioridad;
+	nodoReserva *siguiente;
+};
+
+typedef struct colaReservas
+{
+	nodoReserva *delantero;
+	nodoReserva *trasero;
+	int tamano;
+}colaReservas;
 
 listaRecursos *listaRecursosNueva(){
 	listaRecursos *L;
@@ -97,6 +130,28 @@ listaSalas *listaSalasNueva(){
 	L = (listaSalas*)malloc(sizeof(listaSalas));
 	L->inicio = NULL;
 	return L;
+}
+
+colaReservas *colaReservasNueva(){
+	colaReservas *C;
+	C = (colaReservas*)malloc(sizeof(colaReservas));
+	C->delantero = NULL;
+	C->trasero = NULL;
+	C->tamano = 0;
+	return C;
+}
+
+nodoReserva* nodoReservaNuevo(fecha fecha, hora horaInicio, hora horaFinal, int capacidadMinima, char recurso[50], int prioridad){
+	nodoReserva *nuevo;
+	nuevo = (nodoReserva*)malloc(sizeof(nodoReserva));
+	nuevo->siguiente = NULL;
+	nuevo->fecha = fecha;
+	nuevo->horaInicio = horaInicio;
+	nuevo->horaFinal = horaFinal;
+	nuevo->capacidadMinima = capacidadMinima;
+	strcpy(nuevo->recurso, recurso);
+	nuevo->prioridad = prioridad;
+	return nuevo;
 }
 
 //--------------- INSERCIONES
@@ -177,6 +232,23 @@ void insertarEstudiante(listaEstudiantes *L, estudiante e){
 	}
 }
 
+void encolarReserva(colaReservas *C, nodoReserva *nuevo){
+	C->tamano++;
+	nodoReserva *aux, *atras;
+
+	//caso 0 lista vacia
+	if(C->delantero == NULL){
+		C->delantero = nuevo;
+		C->trasero = C->delantero;
+		return;
+	}
+	
+	C->trasero->siguiente = nuevo;
+	C->trasero = C->trasero->siguiente;
+}
+
+
+
 //--------------- IMPRESIONES
 
 void mostrarRecursos(listaRecursos *R){
@@ -207,6 +279,21 @@ void mostrarEstudiantes(listaEstudiantes *L){
 	printf("\n");
 }
 
+void mostrarReservas(colaReservas *C){
+	nodoReserva *aux = C->delantero;
+	printf("Prioridades de la cola de Reservas: ");
+	while(aux!=NULL){
+		printf(" %i", aux->prioridad );
+		aux = aux->siguiente;
+	}
+	printf(".\n");
+}
+
+int colaTamano(colaReservas *C){
+	printf("El tamanos de la cola de Reservas es %i. \n", C->tamano);
+	return C->tamano;
+}
+
 //--------------- CONSULTAS
 
 void consultarEstudiante(listaEstudiantes *L, int c){
@@ -221,31 +308,109 @@ void consultarEstudiante(listaEstudiantes *L, int c){
 	printf("El estudiante no esta registrado\n");
 }
 
+
+nodoSala* buscarSala(listaSalas *S, char id[10]){
+	nodoSala *aux = S->inicio;
+	while(aux != NULL){
+		if(strcmp(aux->sala.id, id) == 0){
+			return aux;
+		}
+		aux = aux->siguiente;
+	}
+	printf("\nLa sala no esta registrada\n");
+	return NULL;
+}
+
 void consultarSala(listaSalas *S, char id[10]){
-	nodoSala *aux = S->inicio;
-	while(aux != NULL){
-		if(strcmp(aux->sala.id, id) == 0){
-			printf("Sala: %s, Ubicacion: %s, Capacidad: %i, Estado: %i, Calificacion: %i,", id, aux->sala.ubicacion, aux->sala.capMaxima, aux->sala.estado, aux->sala.calificacion );
-			mostrarRecursos(aux->sala.recursos);
-			return;
-		}
-		aux = aux->siguiente;
+	nodoSala *aux = buscarSala(S, id);
+	if(aux != NULL){
+		printf("Sala: %s, Ubicacion: %s, Capacidad: %i, Estado: %i, Calificacion: %i,", id, aux->sala.ubicacion, aux->sala.capMaxima, aux->sala.estado, aux->sala.calificacion );
+		mostrarRecursos(aux->sala.recursos);
 	}
-
-	printf("La sala no esta registrada\n");
 }
 
-int buscarSala(listaSalas *S, char id[10]){
-	nodoSala *aux = S->inicio;
-	while(aux != NULL){
-		if(strcmp(aux->sala.id, id) == 0){
-			return 0;
-		}
-		aux = aux->siguiente;
-	}
-	return 1;
 
+//--------------- MODIFICACIONES
+
+void modificarSala(listaSalas *S, char id[10], int estado, char ubicacion[50]){
+	nodoSala *aux = buscarSala(S, id);
+	if(aux != NULL){
+		aux->sala.estado = estado;
+		strcpy(aux->sala.ubicacion, ubicacion);
+	}
 }
+
+
+
+//--------------- ELIMINACIONES
+
+void eliminarRecurso(listaRecursos *R, char recurso[50]){
+	nodoRecurso *aux = R->inicio, *anterior = NULL;
+
+	if(R->inicio == NULL){
+		printf("La lista de recursos esta vacia.\n");
+	}else{
+		if(strcmp(R->inicio->recurso,recurso) == 0){
+			aux = R->inicio;
+			R->inicio = R->inicio->siguiente;
+		}else{
+			while(aux != NULL){
+				if(strcmp(aux->recurso,recurso) == 0){
+					anterior->siguiente = aux->siguiente;
+					break;
+				}else{
+					anterior = aux;
+					aux = aux->siguiente;
+				}
+			}
+		}
+	}
+
+	free(aux);
+}
+
+nodoReserva* desencolarReserva(colaReservas *C){
+	C->tamano--;
+	int min = C->delantero->prioridad;
+	nodoReserva *aux = C->delantero, *anterior, *menor;
+	menor = aux;
+
+	if(C->delantero == NULL){
+		printf("La cola de reservas esta vacia.\n");
+	}else{
+		
+		aux = C->delantero;
+		while(aux!=NULL){
+			if(aux->prioridad < min){
+				min = aux->prioridad;
+				menor = aux;
+			}
+			aux = aux->siguiente;	
+		}
+
+		aux = C->delantero;
+		if(C->delantero->prioridad == min){
+			aux = C->delantero;
+			C->delantero = C->delantero->siguiente;
+		}else{
+			while(aux!=NULL){
+				if(aux->prioridad == min){
+					anterior->siguiente = aux->siguiente;
+					break;
+				}else{
+					anterior = aux;
+					aux = aux->siguiente;
+				}
+			}
+		}
+
+		free(aux);
+
+	}
+	printf("Reserva con prioridad %i eliminada.\n", menor->prioridad );
+	return menor;
+}
+
 //--------------- MAIN Y PRUEBAS
 
 int main() {
@@ -347,7 +512,7 @@ int main() {
 		printf("Seleccione una accion a realizar: ");
 		scanf("%i", &accion);
 
-		if(accion == 0 || accion>7){
+		if(accion == 0 || accion>8){
 			break;
 		}
 		if(accion == 1){
@@ -402,7 +567,7 @@ int main() {
 
 			listaRecursos *R;
 			R = listaRecursosNueva();
-			char tempRecurso[15];
+			char tempRecurso[50];
 
 			while(free){
 				printf("\n \t1 \tAgregar recurso a la sala\n");
@@ -430,14 +595,67 @@ int main() {
 		}
 
 		if(accion == 6){
-			printf("\tInserte el ID de la sala a modificar: ");
 			char id[10];
+			char ubicacion[50]; 
+			int estado = 0;
+			char recurso[50];
+
+			printf("\tInserte el ID de la sala a modificar: ");
 			scanf("%10s", id);
 			
+			printf("\tInserte la nueva UBICACION de la sala: ");
+			fgets(ubicacion, 50, stdin);
+			scanf("%[^\n]", ubicacion);
+			
+			printf("\tInserte el nuevo ESTADO de la sala: ");
+			scanf("%i", &estado);
+			
+			modificarSala(S, id, estado, ubicacion );
+			nodoSala *mySala = buscarSala(S, id);
+
+
+			while(free){
+				printf("\n");
+				mostrarRecursos(mySala->sala.recursos);
+				printf("\n \t1 \tEliminar recurso de la sala\n");
+				printf("\t2 \tAgregar recurso a la sala\n");
+				printf("\t0 \tSalir\n");
+				printf("\tSeleccione una accion a realizar: ");
+
+				scanf("%i", &accion);
+
+				if(accion == 1){
+					printf("\n\tNombre del recurso a eliminar: ");
+					fgets(recurso, 50, stdin);
+					scanf("%[^\n]", recurso);
+					eliminarRecurso(mySala->sala.recursos, recurso);
+				}
+				if(accion == 2){
+					printf("\n\tNombre del recurso a agregar: ");
+					fgets(recurso, 50, stdin);
+					scanf("%[^\n]", recurso);
+					insertarRecurso(mySala->sala.recursos, recurso);
+				}
+				if(accion == 0){
+					break;
+				}
+			}	
+
+			
+
+
 		}
 
 		if(accion == 7){
-			
+			char id[10];
+			int calificacion;
+			printf("\tInserte el ID de la sala a calificar: ");
+			scanf("%10s", id);
+			nodoSala *mySala = buscarSala(S, id);
+			printf("\tInserte la calificacion: ");
+			scanf("%i",&calificacion);
+			mySala->sala.calificacion = calificacion;
+
 		}
 		
 		if(accion == 8){

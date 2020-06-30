@@ -6,12 +6,18 @@
  */
 
 #include <stdio.h>
-#include <cstdlib>
 #include <stdlib.h>
 #include <string.h>
 #include <conio.h>
 
 
+
+
+#include<cstdlib>
+#include<iostream>
+#include<fstream>
+#include<string.h>
+using namespace std;
 
 //--------------- DEFINICION DE ESTRUCTURAS
 
@@ -105,12 +111,26 @@ listaSalas *listaSalasNueva(){
 
 //--------------- INSERCIONES
 
+
+
+
+
 void insertarRecurso(listaRecursos *R, char recurso[15]){
 	nodoRecurso *n, *aux;
+	
+	ofstream escritura;
+	ifstream consulta;
+	 escritura.open("Recursos.txt",ios::out|ios::app);
 	if(R->inicio == NULL){
 		R->inicio = (nodoRecurso*)malloc(sizeof(nodoRecurso));
 		strcpy(R->inicio->recurso, recurso);
 		R->inicio->siguiente = NULL;
+		if(escritura.is_open()){
+	 
+		escritura<<R->inicio->recurso<<endl;
+		cout<<"Registro de Recurso Ageragado"<<endl;
+	}
+		escritura.close();	
 		return;
 
 	}else{
@@ -129,14 +149,32 @@ void insertarRecurso(listaRecursos *R, char recurso[15]){
 
 void insertarSala(listaSalas *L, sala s){
 	nodoSala *n, *aux;
+	ifstream consulta;
+	ofstream escritura;
+    escritura.open("Salas3.txt",ios::out|ios::app);
+    consulta.open("alumnos.txt",ios::in);
 
 	if(L->inicio == NULL){
 		L->inicio = (nodoSala*)malloc(sizeof(nodoSala));
 		L->inicio->sala = s;
 		L->inicio->siguiente=NULL;
+		if(escritura.is_open() && consulta.is_open()){
+			
+		escritura<<s.id<<" "<<s.ubicacion<<" "<<s.estado<<" "" "<<s.calificacion<<" "<<s.capMaxima<<endl;
+		while(!consulta.eof()){
+		
+			escritura<<"Daniel"<<endl;
+			
+		}
+		
+		cout<<"Registro de sala Ageragado"<<endl;
+	}
+		escritura.close();	
 		return;
+	
 
-	}else{
+	}
+	else{
 		n = L->inicio;
 		while(n!=NULL){
 			if(strcmp(n->sala.id,s.id) == 0 ){
@@ -150,18 +188,37 @@ void insertarSala(listaSalas *L, sala s){
 	aux->siguiente = (nodoSala*)malloc(sizeof(nodoSala));
 	aux->siguiente->siguiente = NULL;
 	aux->siguiente->sala = s;
-
+	
+	if(escritura.is_open()){
+		
+		escritura<<s.id<<" "<<s.ubicacion<<" "<<s.estado<<" "<<s.calificacion<<" "<<s.capMaxima<<endl;
+			cout<<"Registro de sala Ageragado"<<endl;
+		}
+		
+		escritura.close();	
 	}
 	
 }
 
+
 void insertarEstudiante(listaEstudiantes *L, estudiante e){
+	ofstream escritura;
+    escritura.open("Estudiante.txt",ios::out|ios::app);
+    
 	nodoEstudiante *n, *aux;
+	char correo;
+	int tel, calificacion, carnet;
 
 	if(L->inicio == NULL){
 		L->inicio = (nodoEstudiante*) malloc(sizeof(nodoEstudiante));
 		L->inicio->estudiante = e;
 		L->inicio->siguiente = NULL;
+		if(escritura.is_open()){
+		escritura<<e.carnet<<" "<<e.carrera<<" "<<e.carnet<<" "<<e.telefono<<" "<<e.calificacion<<" "<<e.nombre<<endl;
+		cout<<"Registro Ageragado"<<endl;
+		}
+			escritura.close();
+			
 		return;
 	}else{
 		n = L->inicio;
@@ -178,12 +235,20 @@ void insertarEstudiante(listaEstudiantes *L, estudiante e){
 		aux->siguiente = (nodoEstudiante*)malloc(sizeof(nodoEstudiante));
 		aux->siguiente->siguiente = NULL;
 		aux->siguiente->estudiante = e;
+		if(escritura.is_open()){
+	
+		escritura<<e.carnet<<" "<<e.carrera<<" "<<e.carnet<<" "<<e.telefono<<" "<<e.calificacion<<" "<<e.nombre<<endl;
+		cout<<"Registro Ageragado"<<endl;
+		}
+			escritura.close();
 	}
+
 }
 
-//--------------- IMPRESIONES
+//--------------- IMPRESIONES---------------------//
 
 void mostrarRecursos(listaRecursos *R){
+	
 	printf(" Recursos: ");
 	for(nodoRecurso *i = R->inicio; i!=NULL; i = i->siguiente){
 		printf(" %s", i->recurso);
@@ -198,6 +263,29 @@ void mostrarSalas(listaSalas *S){
 		printf("Id: %s, Ubicacion: %s, Capacidad: %i, Estado: %i, Calificacion: %i,", i->sala.id, i->sala.ubicacion, i->sala.capMaxima, i->sala.estado, i->sala.calificacion );
 		mostrarRecursos(i->sala.recursos);
 	}
+}
+void mostrarEstudiantes2(){
+	  ifstream lectura;
+    lectura.open("Estudiante.txt",ios::out|ios::in);
+    if(lectura.is_open()){
+        cout<<"Registros del Archivo alumnos.txt"<<endl;
+        cout<<"________________________________"<<endl;
+        lectura>>estudiante->calificacion;
+        while(!lectura.eof()){
+            lectura>>estudiante.carnet>>estudiante.carrera>>estudiante.carnet>>estudiante.telefono>>estudiante.calificacion>>estudiante.nombre;
+            cout<<"Clave: "<<estudiante->carnet<<endl;
+            cout<<"Nombre: "<<estudiante->nombre<<endl;
+            cout<<"Semestre: "<<estudiante->carrera<<endl;
+            cout<<"Grupo: "<<estudiante->email<<endl;
+            cout<<"Edad: "<<estudiante->calificacion<<endl;
+            lectura>>estudiante->carnet;
+            cout<<"________________________________"<<endl;
+        }
+    }else{
+        cout<<"Error, el Archivo No se Pudo Abrir, No ha sido creado"<<endl;
+    }
+    lectura.close();
+}//Fin funcion consultas
 }
 
 void mostrarEstudiantes(listaEstudiantes *L){
@@ -253,6 +341,7 @@ int buscarSala(listaSalas *S, char id[10]){
 //--------------- MAIN Y PRUEBAS
 
 int main() {
+
 	int accion;
 	listaEstudiantes *L;
 	
@@ -388,6 +477,7 @@ int main() {
 
 		if(accion == 3){
 			mostrarEstudiantes(L);	
+			mostrarEstudiantes2()
 		}
 
 		if(accion == 4){

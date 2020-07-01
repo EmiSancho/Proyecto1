@@ -15,6 +15,8 @@
 typedef struct nodoEstudiante nodoEstudiante;
 typedef struct nodoRecurso nodoRecurso;
 typedef struct nodoSala nodoSala;
+typedef struct nodoReserva nodoReserva;
+
 
 typedef struct estudiante
 {
@@ -36,15 +38,6 @@ typedef struct listaEstudiantes
 {
 	nodoEstudiante *inicio;
 }listaEstudiantes;
-
-typedef struct hora
-{
-	int dia;
-	int mes;
-	int ano;
-	int hora;
-	int minutos;	
-}hora;
 
 typedef struct nodoRecurso
 {
@@ -78,8 +71,6 @@ typedef struct listaSalas
 	nodoSala *inicio;	
 }listaSalas;
 
-typedef struct nodoReserva nodoReserva;
-
 typedef struct hora
 {
 	int hora;
@@ -110,6 +101,14 @@ typedef struct colaReservas
 	nodoReserva *trasero;
 	int tamano;
 }colaReservas;
+
+typedef struct horario
+{
+	char dia;
+	int horaApertura;
+	int horaCierre;
+}horario;
+
 
 listaRecursos *listaRecursosNueva(){
 	listaRecursos *L;
@@ -171,11 +170,9 @@ void insertarRecurso(listaRecursos *R, char recurso[15]){
 			n = n->siguiente;
 		}
 	}
-
 	aux->siguiente = (nodoRecurso*)malloc(sizeof(nodoRecurso));
 	aux->siguiente->siguiente = NULL;
 	strcpy(aux->siguiente->recurso, recurso);
-	
 }
 
 void insertarSala(listaSalas *L, sala s){
@@ -203,7 +200,6 @@ void insertarSala(listaSalas *L, sala s){
 	aux->siguiente->sala = s;
 
 	}
-	
 }
 
 void insertarEstudiante(listaEstudiantes *L, estudiante e){
@@ -236,7 +232,6 @@ void encolarReserva(colaReservas *C, nodoReserva *nuevo){
 	C->tamano++;
 	nodoReserva *aux, *atras;
 
-	//caso 0 lista vacia
 	if(C->delantero == NULL){
 		C->delantero = nuevo;
 		C->trasero = C->delantero;
@@ -294,7 +289,7 @@ int colaTamano(colaReservas *C){
 	return C->tamano;
 }
 
-//--------------- CONSULTAS
+//--------------- CONSULTAS E IMPRESIONES 
 
 void consultarEstudiante(listaEstudiantes *L, int c){
 	nodoEstudiante *aux = L->inicio;
@@ -305,9 +300,8 @@ void consultarEstudiante(listaEstudiantes *L, int c){
 		}
 		aux = aux->siguiente;
 	}
-	printf("El estudiante no esta registrado\n");
+	printf("\nEste estudiante no esta REGISTRADO\n");
 }
-
 
 nodoSala* buscarSala(listaSalas *S, char id[10]){
 	nodoSala *aux = S->inicio;
@@ -329,6 +323,22 @@ void consultarSala(listaSalas *S, char id[10]){
 	}
 }
 
+void mostrarColaReserva(colaReservas *C){
+	nodoReserva *aux = C->delantero;
+	printf("Prioridades de la cola de Reservas: ");
+	while(aux!=NULL){
+		printf(" %i", aux->prioridad );
+		aux = aux->siguiente;
+	}
+	printf(".\n");
+}
+
+void mostrarHorarios(horario horarios[]){
+	printf("Los horarios de operacion son:\n");
+	for(int i = 0; i<7; i++){
+		printf("\t %c de %i a %i.\n",horarios[i].dia, horarios[i].horaApertura,horarios[i].horaCierre );
+	}
+}
 
 //--------------- MODIFICACIONES
 
@@ -403,9 +413,7 @@ nodoReserva* desencolarReserva(colaReservas *C){
 				}
 			}
 		}
-
 		free(aux);
-
 	}
 	printf("Reserva con prioridad %i eliminada.\n", menor->prioridad );
 	return menor;
@@ -426,6 +434,15 @@ int main() {
 	estudiante tempEstudiante;
 	sala tempSala;
 	
+	horario l = {'L',7,21};
+	horario k = {'K',7,21};
+	horario m = {'M',7,21};
+	horario j = {'J',9,23};
+	horario v = {'V',9,23};
+	horario s = {'S',9,17};
+	horario d = {'D',12,17};
+	horario horarios[7] = {l,k,m,j,v,s,d};
+	mostrarHorarios(horarios);
 
 
 	//------------------------------------
@@ -493,6 +510,41 @@ int main() {
 	insertarSala(S,s9);
 	insertarSala(S,s10);
 
+	srand(time(NULL));
+	colaReservas *C;
+	nodoReserva *n1;
+	nodoReserva *n2;
+	nodoReserva *n3;
+	nodoReserva *n4;
+	nodoReserva *n5;
+
+
+	fecha f1 = {01,02,2020};
+	hora h1 = {12,45};
+	hora h2 = {15,45};
+	int prioridad = rand()%4;
+
+	n1 = nodoReservaNuevo(f1,h1,h2,5,"Pantalla", rand()%3);
+	n2 = nodoReservaNuevo(f1,h1,h2,5,"Borrador", rand()%3);
+	n3 = nodoReservaNuevo(f1,h1,h2,5,"12 Tizas", rand()%3);
+	n4 = nodoReservaNuevo(f1,h1,h2,5,"2 puff", rand()%3);
+	n5 = nodoReservaNuevo(f1,h1,h2,5,"Pizarra", rand()%3);
+
+	C = colaReservasNueva();
+
+	encolarReserva(C, n1);
+	encolarReserva(C, n2);
+	encolarReserva(C, n3);
+	encolarReserva(C, n4);
+	encolarReserva(C, n5);
+	//mostrarColaReserva(C);
+
+	// nodoReserva *nodo = desencolarReserva(C);
+	// nodoReserva *nodo2 = desencolarReserva(C);
+	// nodoReserva *nodo3 = desencolarReserva(C);
+	// nodoReserva *nodo4 = desencolarReserva(C);
+	// nodoReserva *nodo5 = desencolarReserva(C);
+	// printf("El nodo de menor prioridad es: %i\n", nodo->prioridad);
 
 	//------------------------------------
 
@@ -507,12 +559,13 @@ int main() {
 		printf("6\t Modificar una sala.\n");
 		printf("7\t Calificar una sala.\n");
 		printf("8\t Consultar sala.\n");
+		printf("9\t Crear una reserva.\n");
 		printf("0\t Salir.\n");
 		
 		printf("Seleccione una accion a realizar: ");
 		scanf("%i", &accion);
 
-		if(accion == 0 || accion>8){
+		if(accion == 0 || accion>10){
 			break;
 		}
 		if(accion == 1){
@@ -541,7 +594,7 @@ int main() {
 		}
 
 		if(accion == 2){
-			printf("Inserte el carnet a buscar: ");
+			printf("Inserte el numero de carnet a consultar: ");
 			int carnet;
 			scanf("%i", &carnet);
 			consultarEstudiante(L,carnet);
@@ -640,10 +693,6 @@ int main() {
 					break;
 				}
 			}	
-
-			
-
-
 		}
 
 		if(accion == 7){
@@ -655,7 +704,6 @@ int main() {
 			printf("\tInserte la calificacion: ");
 			scanf("%i",&calificacion);
 			mySala->sala.calificacion = calificacion;
-
 		}
 		
 		if(accion == 8){
@@ -663,6 +711,19 @@ int main() {
 			char id[10];
 			scanf("%10s", id);
 			consultarSala(S,id);	
+		}
+
+
+
+		if(accion == 9){
+			printf("\tInserte DIA de la reserva: ");
+			printf("\tInserte MES de la reserva: ");
+			printf("\tInserte AÑO de la reserva: ");
+			printf("\tInserte HORA DE INICIO de la reserva: ");
+			printf("\tInserte HORA FINALIZACION de la reserva: ");
+			printf("\tInserte CAPACIDAD REQUERIDA para la reserva: ");
+
+			
 		}
 
 

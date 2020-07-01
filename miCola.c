@@ -152,10 +152,10 @@ int main(void)
 	int prioridad = rand()%4;
 
 	n1 = nodoReservaNuevo(f1,h1,h2,5,"Pantalla", rand()%3);
-	n2 = nodoReservaNuevo(f1,h1,h2,5,"Pantalla", rand()%3);
-	n3 = nodoReservaNuevo(f1,h1,h2,5,"Pantalla", rand()%3);
-	n4 = nodoReservaNuevo(f1,h1,h2,5,"Pantalla", rand()%3);
-	n5 = nodoReservaNuevo(f1,h1,h2,5,"Pantalla", rand()%3);
+	n2 = nodoReservaNuevo(f1,h1,h2,5,"Borrador", rand()%3);
+	n3 = nodoReservaNuevo(f1,h1,h2,5,"12 Tizas", rand()%3);
+	n4 = nodoReservaNuevo(f1,h1,h2,5,"2 puff", rand()%3);
+	n5 = nodoReservaNuevo(f1,h1,h2,5,"Pizarra", rand()%3);
 
 	C = colaReservasNueva();
 

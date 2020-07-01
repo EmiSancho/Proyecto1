@@ -11,21 +11,14 @@
 #include <time.h>     
 
 //--------------- DEFINICION DE ESTRUCTURAS
-
 typedef struct nodoEstudiante nodoEstudiante;
-typedef struct nodoRecurso nodoRecurso;
 typedef struct nodoSala nodoSala;
 typedef struct nodoReserva nodoReserva;
+typedef struct nodoRecurso nodoRecurso;
 typedef struct nodoHorario nodoHorario;
+typedef struct nodoIncidente nodoIncidente;
 
-typedef struct horario
-{
-	char dia;
-	int horaApertura;
-	int horaCierre;
-	
-}horario;
-
+//------ESTUDIANTE
 typedef struct estudiante
 {
 	int carnet;
@@ -47,6 +40,14 @@ typedef struct listaEstudiantes
 	nodoEstudiante *inicio;
 }listaEstudiantes;
 
+listaEstudiantes *listaEstudiantesNueva(){
+	listaEstudiantes *L;
+	L = (listaEstudiantes*) malloc(sizeof(listaEstudiantes));
+	L->inicio = NULL;
+	return L;
+}
+
+//------RECURSO
 typedef struct nodoRecurso
 {
 	char recurso[50];
@@ -58,6 +59,40 @@ typedef struct listaRecursos
 	nodoRecurso *inicio;	
 }listaRecursos;
 
+listaRecursos *listaRecursosNueva(){
+	listaRecursos *R;
+	R = (listaRecursos*)malloc(sizeof(listaRecursos));
+	R->inicio = NULL;
+	return R;
+}
+
+//------HORARIO
+typedef struct horario
+{
+	char dia;
+	int horaApertura;
+	int horaCierre;
+}horario;
+
+struct nodoHorario
+{
+	horario horario;
+	nodoHorario *siguiente;
+};
+
+typedef struct listaHorarios
+{
+	nodoHorario *inicio;
+}listaHorarios;
+
+listaHorarios *listaHorariosNueva(){
+	listaHorarios *H;
+	H = (listaHorarios*)malloc(sizeof(listaHorarios));
+	H->inicio = NULL;
+	return H;
+}		
+
+//------SALA
 typedef struct sala
 {
 	char id[10];
@@ -67,8 +102,7 @@ typedef struct sala
 	int estado; 
 	int calificacion;
 	int reservas;
-	int nHorarios;
-	horario horarios[];
+	listaHorarios *horarios;
 }sala;
 
 struct nodoSala
@@ -82,51 +116,6 @@ typedef struct listaSalas
 	nodoSala *inicio;	
 }listaSalas;
 
-typedef struct hora
-{
-	int hora;
-	int minutos;
-}hora;
-
-typedef struct fecha
-{
-	int dia;
-	int mes;
-	int ano;
-}fecha;
-
-struct nodoReserva
-{
-	fecha fecha;
-	hora horaInicio;
-	hora horaFinal;
-	int capacidadMinima;
-	char recurso[50];
-	int prioridad;
-	nodoReserva *siguiente;
-};
-
-typedef struct colaReservas
-{
-	nodoReserva *delantero;
-	nodoReserva *trasero;
-	int tamano;
-}colaReservas;
-
-listaRecursos *listaRecursosNueva(){
-	listaRecursos *L;
-	L = (listaRecursos*)malloc(sizeof(listaRecursos));
-	L->inicio = NULL;
-	return L;
-}
-
-listaEstudiantes *listaEstudiantesNueva(){
-	listaEstudiantes *L;
-	L = (listaEstudiantes*) malloc(sizeof(listaEstudiantes));
-	L->inicio = NULL;
-	return L;
-}
-
 listaSalas *listaSalasNueva(){
 	listaSalas *L;
 	L = (listaSalas*)malloc(sizeof(listaSalas));
@@ -134,29 +123,68 @@ listaSalas *listaSalasNueva(){
 	return L;
 }
 
-colaReservas *colaReservasNueva(){
-	colaReservas *C;
-	C = (colaReservas*)malloc(sizeof(colaReservas));
-	C->delantero = NULL;
-	C->trasero = NULL;
-	C->tamano = 0;
+//------RESERVA
+typedef struct reserva
+{
+	int carnetEstudiante;
+	char idSala[10];
+	char asunto[50];
+	int id;
+	int dia;
+	int mes;
+	int horaInicio;
+	int horaFinal;
+	int capacidadMinima;
+	char recurso[50];
+	int prioridad;
+	int estado;
+}reserva;
+
+struct nodoReserva
+{
+	reserva reserva;
+	nodoReserva *siguiente;
+};
+
+typedef struct listaReservas
+{
+	nodoReserva *inicio;
+}listaReservas;
+
+listaReservas *listaReservasNueva(){
+	listaReservas *C;
+	C = (listaReservas*)malloc(sizeof(listaReservas));
+	C->inicio = NULL;
 	return C;
 }
 
-nodoReserva* nodoReservaNuevo(fecha fecha, hora horaInicio, hora horaFinal, int capacidadMinima, char recurso[50], int prioridad){
-	nodoReserva *nuevo;
-	nuevo = (nodoReserva*)malloc(sizeof(nodoReserva));
-	nuevo->siguiente = NULL;
-	nuevo->fecha = fecha;
-	nuevo->horaInicio = horaInicio;
-	nuevo->horaFinal = horaFinal;
-	nuevo->capacidadMinima = capacidadMinima;
-	strcpy(nuevo->recurso, recurso);
-	nuevo->prioridad = prioridad;
-	return nuevo;
-}
+//------INCIDENTE
 
 //--------------- INSERCIONES
+void insertarReserva(listaReservas *L, reserva r){
+	nodoReserva *n, *aux;
+	if(L->inicio == NULL){
+		L->inicio = (nodoReserva*) malloc(sizeof(nodoReserva));
+		L->inicio->reserva = r;
+		L->inicio->siguiente = NULL;
+		return;
+	}else{
+		n = L->inicio;
+		while(n!=NULL){
+			// if(strcmp(aux->reserva.idSala,r.idSala)==0 && aux->reserva.horaInicio == r.horaInicio){
+			// 	printf("\n LA SALA YA ESTA RESERVADA PARA ESA HORA\n");
+			// 	return;
+			// }else{
+				aux = n;
+				n = n->siguiente;
+			// }
+		}	
+
+		aux->siguiente = (nodoReserva*)malloc(sizeof(nodoReserva));
+		aux->siguiente->siguiente = NULL;
+		aux->siguiente->reserva = r;
+	}
+}
 
 void insertarRecurso(listaRecursos *R, char recurso[15]){
 	nodoRecurso *n, *aux;
@@ -207,7 +235,6 @@ void insertarSala(listaSalas *L, sala s){
 
 void insertarEstudiante(listaEstudiantes *L, estudiante e){
 	nodoEstudiante *n, *aux;
-
 	if(L->inicio == NULL){
 		L->inicio = (nodoEstudiante*) malloc(sizeof(nodoEstudiante));
 		L->inicio->estudiante = e;
@@ -230,29 +257,40 @@ void insertarEstudiante(listaEstudiantes *L, estudiante e){
 		aux->siguiente->estudiante = e;
 	}
 }
-
-void encolarReserva(colaReservas *C, nodoReserva *nuevo){
-	C->tamano++;
-	nodoReserva *aux, *atras;
-
-	if(C->delantero == NULL){
-		C->delantero = nuevo;
-		C->trasero = C->delantero;
+void insertarHorario(listaHorarios *L, horario h){
+	nodoHorario *n, *aux;
+	if(L->inicio == NULL){
+		L->inicio = (nodoHorario*) malloc(sizeof(nodoHorario));
+		L->inicio->horario = h;
+		L->inicio->siguiente = NULL;
 		return;
-	}
-	
-	C->trasero->siguiente = nuevo;
-	C->trasero = C->trasero->siguiente;
-}
+	}else{
+		n = L->inicio;
+		while(n!=NULL){
+			if(n->horario.dia == h.dia && n->horario.horaApertura && h.horaApertura && n->horario.horaCierre == h.horaCierre){
+				printf("\n ESTE HORARIO YA HA SIDO ASIGNADO\n");
+				return;
+			}else{
+				aux = n;
+				n = n->siguiente;
+			}
+		}	
+
+		aux->siguiente = (nodoHorario*)malloc(sizeof(nodoHorario));
+		aux->siguiente->siguiente = NULL;
+		aux->siguiente->horario = h;
+	}	
+}	
 
 
 
 //--------------- IMPRESIONES
-
-void mostrarHorarios(horario horarios[], int index){
-	printf(" Los horarios de operacion disponibles son:\n");
-	for(int i = 0; i<index; i++){
-		printf("\t %i \t %c de %i a %i.\n",i+1,horarios[i].dia, horarios[i].horaApertura,horarios[i].horaCierre );
+void mostrarHorarios(listaHorarios *L){
+	printf("\nLos horarios de operacion disponibles son:\n");
+	int index = 0;
+	for(nodoHorario *i = L->inicio; i!=NULL; i=i->siguiente){
+		printf("\t %i \t %c de %i a %i.\n",index+1,i->horario.dia, i->horario.horaApertura,i->horario.horaCierre );
+		index++;
 	}
 	printf("\n");
 }
@@ -271,13 +309,13 @@ void mostrarSalas(listaSalas *S){
 	for(nodoSala *i = S->inicio; i!=NULL; i = i->siguiente){
 		printf("Id: %s, Ubicacion: %s, Capacidad: %i, Estado: %i, Calificacion: %i,", i->sala.id, i->sala.ubicacion, i->sala.capMaxima, i->sala.estado, i->sala.calificacion );
 		mostrarRecursos(i->sala.recursos);
-		mostrarHorarios(i->sala.horarios, i->sala.nHorarios);
+		mostrarHorarios(i->sala.horarios);
 	}
 }
 
 void mostrarEstudiantes(listaEstudiantes *L){
 	
-	printf("\nLa listaEstudiantes de estudiantes es:\n");
+	printf("\nLa lista de estudiantes es:\n");
 	for (nodoEstudiante *i = L->inicio; i!=NULL; i = i->siguiente)
 	{
 		printf("Nombre: %s, carnet: %i, carrera: %s, email: %s, calificacion: %i, telefono: %i.\n", i->estudiante.nombre, i->estudiante.carnet, i->estudiante.carrera, i->estudiante.email, i->estudiante.calificacion, i->estudiante.telefono);
@@ -286,32 +324,16 @@ void mostrarEstudiantes(listaEstudiantes *L){
 	printf("\n");
 }
 
-void mostrarReservas(colaReservas *C){
-	nodoReserva *aux = C->delantero;
-	printf("Prioridades de la cola de Reservas: ");
-	while(aux!=NULL){
-		printf(" %i", aux->prioridad );
-		aux = aux->siguiente;
+void mostrarReservas(listaReservas *C){
+	nodoReserva *aux = C->inicio;
+	printf("\nLa lista de reservas es:\n");
+	for(nodoReserva *i = C->inicio; i!=NULL ; i=i->siguiente){
+		printf("\nEstudiante: %i, sala: %s, asunto: %s, participantes: %i, fecha: %i/%i, inicia: %i, finaliza: %i, recurso: %s, estado: %i. \n",i->reserva.carnetEstudiante, i->reserva.idSala, i->reserva.asunto,i->reserva.capacidadMinima,i->reserva.dia, i->reserva.mes, i->reserva.horaInicio, i->reserva.horaFinal, i->reserva.recurso, i->reserva.estado );
 	}
-	printf(".\n");
-}
-
-int colaTamano(colaReservas *C){
-	printf("El tamanos de la cola de Reservas es %i. \n", C->tamano);
-	return C->tamano;
+	
 }
 
 
-
-void mostrarColaReserva(colaReservas *C){
-	nodoReserva *aux = C->delantero;
-	printf("Prioridades de la cola de Reservas: ");
-	while(aux!=NULL){
-		printf(" %i", aux->prioridad );
-		aux = aux->siguiente;
-	}
-	printf(".\n");
-}
 
 //--------------- CONSULTAS  
 
@@ -319,7 +341,7 @@ void consultarEstudiante(listaEstudiantes *L, int c){
 	nodoEstudiante *aux = L->inicio;
 	while(aux != NULL){
 		if(aux->estudiante.carnet == c){
-			printf("Nombre: %s, carnet: %i, carrera: %s, email: %s, calificacion: %i, telefono: %i.\n", aux->estudiante.nombre, aux->estudiante.carnet, aux->estudiante.carrera, aux->estudiante.email, aux->estudiante.calificacion, aux->estudiante.telefono);
+			printf("\nNombre: %s, carnet: %i, carrera: %s, email: %s, calificacion: %i, telefono: %i.\n", aux->estudiante.nombre, aux->estudiante.carnet, aux->estudiante.carrera, aux->estudiante.email, aux->estudiante.calificacion, aux->estudiante.telefono);
 			return;
 		}
 		aux = aux->siguiente;
@@ -345,16 +367,12 @@ void consultarSala(listaSalas *S, char id[10]){
 	if(aux != NULL){
 		printf("Sala: %s, Ubicacion: %s, Capacidad: %i, Estado: %i, Calificacion: %i,", id, aux->sala.ubicacion, aux->sala.capMaxima, aux->sala.estado, aux->sala.calificacion );
 		mostrarRecursos(aux->sala.recursos);
-		mostrarHorarios(aux->sala.horarios, aux->sala.nHorarios);
+		mostrarHorarios(aux->sala.horarios);
 	}
 }
 
 
-
-
-
 //--------------- MODIFICACIONES
-
 void modificarSala(listaSalas *S, char id[10], int estado, char ubicacion[50]){
 	nodoSala *aux = buscarSala(S, id);
 	if(aux != NULL){
@@ -363,10 +381,7 @@ void modificarSala(listaSalas *S, char id[10], int estado, char ubicacion[50]){
 	}
 }
 
-
-
 //--------------- ELIMINACIONES
-
 void eliminarRecurso(listaRecursos *R, char recurso[50]){
 	nodoRecurso *aux = R->inicio, *anterior = NULL;
 
@@ -392,82 +407,45 @@ void eliminarRecurso(listaRecursos *R, char recurso[50]){
 	free(aux);
 }
 
-nodoReserva* desencolarReserva(colaReservas *C){
-	C->tamano--;
-	int min = C->delantero->prioridad;
-	nodoReserva *aux = C->delantero, *anterior, *menor;
-	menor = aux;
 
-	if(C->delantero == NULL){
-		printf("La cola de reservas esta vacia.\n");
-	}else{
-		
-		aux = C->delantero;
-		while(aux!=NULL){
-			if(aux->prioridad < min){
-				min = aux->prioridad;
-				menor = aux;
-			}
-			aux = aux->siguiente;	
-		}
-
-		aux = C->delantero;
-		if(C->delantero->prioridad == min){
-			aux = C->delantero;
-			C->delantero = C->delantero->siguiente;
-		}else{
-			while(aux!=NULL){
-				if(aux->prioridad == min){
-					anterior->siguiente = aux->siguiente;
-					break;
-				}else{
-					anterior = aux;
-					aux = aux->siguiente;
-				}
-			}
-		}
-		free(aux);
-	}
-	printf("Reserva con prioridad %i eliminada.\n", menor->prioridad );
-	return menor;
-}
 
 //--------------- MAIN Y PRUEBAS
-
 int main() {
+	//---NECESARIOS
+	srand(time(NULL));
 	int accion;
+	int IdReservas = 5;
+	
 	listaEstudiantes *L;
-	
 	listaSalas *S;
-
-	L = listaEstudiantesNueva();
+	listaHorarios *H;
+	listaReservas *V;
 	
+	L = listaEstudiantesNueva();
 	S = listaSalasNueva();
-
+	H = listaHorariosNueva();
+	V = listaReservasNueva();
+	
+	char tempRecurso[50];
+	char tempDia;
 	estudiante tempEstudiante;
 	sala tempSala;
+	horario tempHorario;
+	reserva tempReserva; 
 	
-	horario l = {'L',7,21};
-	horario k = {'K',7,21};
-	horario m = {'M',7,21};
-	horario j = {'J',9,23};
-	horario v = {'V',9,23};
-	horario s = {'S',9,17};
-	horario d = {'D',12,17};
-	horario horarios[7] = {l,k,m,j,v,s,d};
 	
-
-	//------------------------------------
-	estudiante p1 = {20201,"Gloria Delgado-Prichett","Estilismo", "gloria@gmail.com",100,89490000};			
-	estudiante p2 = {20202,"Jay Prichett","Servicio al cliente", "jay@gmail.com",100,89490001};		
-	estudiante p3 = {20203,"Joe Prichett","Ingenieria", "joe@gmail.com",100,89490003};	
-	estudiante p4 = {20204,"Manny Delgado","Poesia", "manny@gmail.com",100,89490004};
-	estudiante p5 = {20205,"Cameron Tucker","Educacion musical", "cameron@gmail.com",100,89490005};			
-	estudiante p6 = {20206,"Mitchell Prichett","Derecho ambiental", "mitchell@gmail.com",100,89490006};			
-	estudiante p7 = {20207,"Lily Tucker-Prichett","Medicina veterinaria", "lily@gmail.com",100,89490007};									
-	estudiante p8 = {20208,"Claire Dunphy","Administracion de empresas", "claire@gmail.com",100,89490008};			
-	estudiante p9 = {20209,"Phill Dunphy","Bienes raices", "phil@gmail.com",100,89490009};			
-	estudiante p10 = {202010,"Alex Dunphy","Medicina y cirugia", "alex@gmail.com",100,89490010};			
+	//---------------- ESTO ES QUE LO QUE TIENE QUE SER CARGADO DESDE EL TXT
+	//ESTUDIANTES
+	estudiante p1 = {20201,"Gloria Delgado-Prichett","Biotecnologia", "gloria@gmail.com",100,89490000};			
+	estudiante p2 = {20202,"Jay Prichett","Administracion de empresas", "jay@gmail.com",100,89490001};		
+	estudiante p3 = {20203,"Joe Prichett","Computacion", "joe@gmail.com",100,89490003};	
+	estudiante p4 = {20204,"Manny Delgado","Turismo sostenible", "manny@gmail.com",100,89490004};
+	estudiante p5 = {20205,"Cameron Tucker","Matematica en entornos TEC", "cameron@gmail.com",100,89490005};			
+	estudiante p6 = {20206,"Mitchell Prichett","ATI", "mitchell@gmail.com",100,89490006};			
+	estudiante p7 = {20207,"Lily Tucker-Prichett","Agricola", "lily@gmail.com",100,89490007};									
+	estudiante p8 = {20208,"Claire Dunphy","Ambiental", "claire@gmail.com",100,89490008};			
+	estudiante p9 = {20209,"Phill Dunphy","Electronica", "phil@gmail.com",100,89490009};			
+	estudiante p10 = {202010,"Alex Dunphy","Agronegocios", "alex@gmail.com",100,89490010};			
 	insertarEstudiante(L,p1);
 	insertarEstudiante(L,p2);
 	insertarEstudiante(L,p3);
@@ -478,57 +456,78 @@ int main() {
 	insertarEstudiante(L,p8);
 	insertarEstudiante(L,p9);
 	insertarEstudiante(L,p10);
-
-
-	listaRecursos *r1; r1 = listaRecursosNueva();
-	insertarRecurso(r1,"TV");
-	listaRecursos *r2; r2 = listaRecursosNueva();
-	insertarRecurso(r2,"Pizarra"); insertarRecurso(r2,"Borrador");
-	listaRecursos *r3; r3 = listaRecursosNueva();
-	insertarRecurso(r3,"Pizarra"); insertarRecurso(r3,"12 Tizas");
-	listaRecursos *r4; r4 = listaRecursosNueva();
-	insertarRecurso(r4,"5 sillas"); insertarRecurso(r4,"1 mesa");
-	listaRecursos *r5; r5 = listaRecursosNueva();
-	insertarRecurso(r5,"Pizarra"); insertarRecurso(r5,"3 Marcadores");
-	listaRecursos *r6; r6 = listaRecursosNueva();
-	insertarRecurso(r6,"Mesa"); insertarRecurso(r6,"Bancos");
-	listaRecursos *r7;  r7 = listaRecursosNueva();
-	insertarRecurso(r7,"Libros"); insertarRecurso(r7,"2 puff");
-	listaRecursos *r8;  r8 = listaRecursosNueva();
-	insertarRecurso(r8,"Proyector"); insertarRecurso(r8,"Fondo blanco");
-	listaRecursos *r9;  r9 = listaRecursosNueva();
-	insertarRecurso(r9,"Pantalla"); insertarRecurso(r9,"Computadora");
-	listaRecursos *r10;  r10 = listaRecursosNueva();
-	insertarRecurso(r10,"Hojas blancas"); insertarRecurso(r10,"Lapices");
 	
+	//RECURSOS
+	listaRecursos *r1; r1 = listaRecursosNueva();
+	listaRecursos *r2; r2 = listaRecursosNueva();
+	listaRecursos *r3; r3 = listaRecursosNueva();
+	listaRecursos *r4; r4 = listaRecursosNueva();
+	listaRecursos *r5; r5 = listaRecursosNueva();
+	listaRecursos *r6; r6 = listaRecursosNueva();
+	listaRecursos *r7;  r7 = listaRecursosNueva();
+	listaRecursos *r8;  r8 = listaRecursosNueva();
+	listaRecursos *r9;  r9 = listaRecursosNueva();
+	listaRecursos *r10;  r10 = listaRecursosNueva();
+	insertarRecurso(r10,"Hojas blancas"); insertarRecurso(r10,"Lapiz");
+	insertarRecurso(r1,"TV");
+	insertarRecurso(r2,"Pizarra"); insertarRecurso(r2,"Borrador");
+	insertarRecurso(r3,"Pizarra"); insertarRecurso(r3,"12 Tizas");
+	insertarRecurso(r4,"5 sillas"); insertarRecurso(r4,"1 mesa");
+	insertarRecurso(r5,"Pizarra"); insertarRecurso(r5,"3 Marcadores");
+	insertarRecurso(r6,"Mesa"); insertarRecurso(r6,"Bancos");
+	insertarRecurso(r7,"Libros"); insertarRecurso(r7,"2 puff");
+	insertarRecurso(r8,"Proyector"); insertarRecurso(r8,"Fondo blanco");
+	insertarRecurso(r9,"Pantalla"); insertarRecurso(r9,"Computadora");
+	
+	//HORARIOS 
+	horario l = {'L',7,21};
+	horario k = {'K',7,21};
+	horario m = {'M',7,21};
+	horario j = {'J',9,23};
+	horario v = {'V',9,23};
+	horario s = {'S',9,17};
+	horario d = {'D',12,17};
+	insertarHorario(H,l);
+	insertarHorario(H,k);
+	insertarHorario(H,m);
+	insertarHorario(H,j);
+	insertarHorario(H,v);
+	insertarHorario(H,s);
+	insertarHorario(H,d);
 
-	horario h01[2] = {l,k};
-
-	sala s1 = {"SAL-001", "Contiguo puerta 1", 11, r1, 0,100,0,2};
-	s1.horarios = h01;
-
-	sala s2 = {"SAL-002", "Contiguo puerta 2", 12, r2, 0,100,0,2};
-	s2.horarios[0] = m; s2.horarios[1] = j;
-	sala s3 = {"SAL-003", "Contiguo puerta 3", 13, r3, 0,100,0,2};
-	s3.horarios[0] = v; s3.horarios[1] = s;
-	sala s4 = {"SAL-004", "Contiguo puerta 4", 14, r4, 0,100,0,2};
-	s4.horarios[0] = d; s4.horarios[1] = l;
-	sala s5 = {"SAL-005", "Contiguo puerta 5", 15, r5, 0,100,0,2};
-	s5.horarios[0] = l; s5.horarios[1] = m;
-	sala s6 = {"SAL-006", "Contiguo puerta 6", 16, r6, 0,100,0,2};
-	s6.horarios[0] = l; s6.horarios[1] = j;
-	sala s7 = {"SAL-007", "Contiguo puerta 7", 17, r7, 0,100,0,2};
-	s7.horarios[0] = l; s7.horarios[1] = v;
-	sala s8 = {"SAL-008", "Contiguo puerta 8", 18, r8, 0,100,0,2};
-	s8.horarios[0] = l; s8.horarios[1] = s;
-	sala s9 = {"SAL-009", "Contiguo puerta 9", 19, r9, 0,100,0,2};
-	s9.horarios[0] = k; s9.horarios[1] = m;
-	sala s10 = {"SAL-010", "Contiguo puerta 10", 20, r10, 0,100,0,2};
-	s10.horarios[0] = j; s10.horarios[1] = v;
-
-
-	mostrarHorarios(h01,2);
-
+	listaHorarios *h1; h1 = listaHorariosNueva();
+	listaHorarios *h2; h2 = listaHorariosNueva();
+	listaHorarios *h3; h3 = listaHorariosNueva();
+	listaHorarios *h4; h4 = listaHorariosNueva();
+	listaHorarios *h5; h5 = listaHorariosNueva();
+	listaHorarios *h6; h6 = listaHorariosNueva();
+	listaHorarios *h7; h7 = listaHorariosNueva();
+	listaHorarios *h8; h8 = listaHorariosNueva();
+	listaHorarios *h9; h9 = listaHorariosNueva();
+	listaHorarios *h10; h10 = listaHorariosNueva();
+	insertarHorario(h1,l); insertarHorario(h1,k);
+	insertarHorario(h2,k); insertarHorario(h2,m);
+	insertarHorario(h3,m); insertarHorario(h3,j);
+	insertarHorario(h4,j); insertarHorario(h4,v);
+	insertarHorario(h5,v); insertarHorario(h5,s);
+	insertarHorario(h6,s); insertarHorario(h6,d);
+	insertarHorario(h7,d); insertarHorario(h7,k);
+	insertarHorario(h8,l); insertarHorario(h8,j);
+	insertarHorario(h9,m); insertarHorario(h9,s);
+	insertarHorario(h10,v); insertarHorario(h10,d);
+	
+	
+	//SALAS
+	sala s1 = {"SAL-001", "Contiguo puerta 1", 5, r1, 0,100,0,h1};
+	sala s2 = {"SAL-002", "Contiguo puerta 2", 6, r2, 0,100,0,h2};
+	sala s3 = {"SAL-003", "Contiguo puerta 3", 7, r3, 0,100,0,h3};
+	sala s4 = {"SAL-004", "Contiguo puerta 4", 8, r4, 0,100,0,h4};
+	sala s5 = {"SAL-005", "Contiguo puerta 5", 9, r5, 0,100,0,h5};
+	sala s6 = {"SAL-006", "Contiguo puerta 6", 10, r6, 0,100,0,h6};
+	sala s7 = {"SAL-007", "Contiguo puerta 7", 11, r7, 0,100,0,h7};
+	sala s8 = {"SAL-008", "Contiguo puerta 8", 12, r8, 0,100,0,h8};
+	sala s9 = {"SAL-009", "Contiguo puerta 9", 13, r9, 0,100,0,h9};
+	sala s10 = {"SAL-010", "Contiguo puerta 10", 14, r10, 0,100,0,h10};
 	insertarSala(S,s1);
 	insertarSala(S,s2);
 	insertarSala(S,s3);
@@ -540,64 +539,48 @@ int main() {
 	insertarSala(S,s9);
 	insertarSala(S,s10);
 
-	srand(time(NULL));
-	colaReservas *C;
-	nodoReserva *n1;
-	nodoReserva *n2;
-	nodoReserva *n3;
-	nodoReserva *n4;
-	nodoReserva *n5;
-
-
-	fecha f1 = {01,02,2020};
-	hora h1 = {12,45};
-	hora h2 = {15,45};
-	int prioridad = rand()%4;
-
-	n1 = nodoReservaNuevo(f1,h1,h2,5,"Pantalla", rand()%3);
-	n2 = nodoReservaNuevo(f1,h1,h2,5,"Borrador", rand()%3);
-	n3 = nodoReservaNuevo(f1,h1,h2,5,"12 Tizas", rand()%3);
-	n4 = nodoReservaNuevo(f1,h1,h2,5,"2 puff", rand()%3);
-	n5 = nodoReservaNuevo(f1,h1,h2,5,"Pizarra", rand()%3);
-
-	C = colaReservasNueva();
-
-	encolarReserva(C, n1);
-	encolarReserva(C, n2);
-	encolarReserva(C, n3);
-	encolarReserva(C, n4);
-	encolarReserva(C, n5);
-	//mostrarColaReserva(C);
-
-	// nodoReserva *nodo = desencolarReserva(C);
-	// nodoReserva *nodo2 = desencolarReserva(C);
-	// nodoReserva *nodo3 = desencolarReserva(C);
-	// nodoReserva *nodo4 = desencolarReserva(C);
-	// nodoReserva *nodo5 = desencolarReserva(C);
-	// printf("El nodo de menor prioridad es: %i\n", nodo->prioridad);
-
-	//------------------------------------
-
-
-	while(free){
+	//RESERVAS
+	reserva n1 = {20201,"SAL-001","Estudiar Calculo",1, 1, 7, 10,11,5,"Pantalla",rand()%3,0};
+	reserva n2 = {20202,"SAL-002","Estudiar Discreta",2, 2, 7, 11,12,6,"Borrador", rand()%3,0};
+	reserva n3 = {20203,"SAL-003","Jugar Halo",3, 3, 7, 12,13,7,"12 Tizas", rand()%3,0};
+	reserva n4 = {20204,"SAL-004","Programar",4, 4, 7, 13,15,8,"2 puff", rand()%3,0};
+	reserva n5 = {20205,"SAL-005","Investigar",5, 5, 7, 14,17,9,"Pizarra", rand()%3,0};
+	insertarReserva(V,n1);
+	insertarReserva(V,n2);
+	insertarReserva(V,n3);
+	insertarReserva(V,n4);
+	insertarReserva(V,n5);
+	
+	//---------------- FIN DE LO QUE TIENE QUE SER CARGADO DESDE EL TXT
+	
+	
+	//********************** MENU PRINCIPAL****************************
+	while(free){ //while free significa peligro !OJO!
 		printf("\n*** Menu principal: *** \n");
-		printf("1\t Ingresar nuevo estudiante.\n");
+		printf("1\t Agregar nuevo estudiante.\n");
 		printf("2\t Consultar estudiante por carnet.\n");
 		printf("3\t Mostrar lista de estudiantes.\n");
-		printf("4\t Ingresar nueva sala de estudio.\n");
+		printf("4\t Agregar nueva sala de estudio.\n");
 		printf("5\t Mostrar lista de salas.\n");
-		printf("6\t Modificar una sala.\n");
+		printf("6\t Modificar datos de una sala.\n");
 		printf("7\t Calificar una sala.\n");
 		printf("8\t Consultar sala.\n");
 		printf("9\t Crear una reserva.\n");
+		printf("10\t Consultar reservas por numero de carnet.\n");
+		printf("11\t Mostrar lista de reservas.\n");
+		printf("12\t Cancelar reserva.\n");
+		printf("13\t Atender reserva.\n");
+		printf("14\t Registrar incidente.\n");
+		printf("15\t Consultar incidentes.\n");
+		printf("16\t Reportes.\n");
 		printf("0\t Salir.\n");
-		
 		printf("Seleccione una accion a realizar: ");
 		scanf("%i", &accion);
-
-		if(accion == 0 || accion>10){
+	
+		if(accion == 0 || accion > 16){
 			break;
-		}
+		}	
+		
 		if(accion == 1){
 			printf("\tInserte del NOMBRE del estudiante: ");
 			fgets(tempEstudiante.nombre, 50, stdin);
@@ -622,7 +605,7 @@ int main() {
 
 			insertarEstudiante(L,tempEstudiante);			
 		}
-
+		
 		if(accion == 2){
 			printf("Inserte el numero de carnet a consultar: ");
 			int carnet;
@@ -633,8 +616,14 @@ int main() {
 		if(accion == 3){
 			mostrarEstudiantes(L);	
 		}
-
+		
 		if(accion == 4){
+			//tienen que estar aqui para que casa sala tenga su lista independiente
+			listaRecursos *R;
+			R = listaRecursosNueva();
+			listaHorarios *H1;
+			H1 = listaHorariosNueva();
+			
 			printf("\tInserte del ID de la sala: ");
 			scanf("%s", tempSala.id);
 			
@@ -647,10 +636,8 @@ int main() {
 			
 			tempSala.estado = 0;
 			tempSala.calificacion = 100;
-
-			listaRecursos *R;
-			R = listaRecursosNueva();
-			char tempRecurso[50];
+			tempSala.reservas = 0;
+			
 
 			while(free){
 				printf("\n \t1 \tAgregar recurso a la sala\n");
@@ -670,34 +657,33 @@ int main() {
 			}	
 			tempSala.recursos = R;
 			
-			mostrarHorarios(horarios,7);
-			horario h[7];
-			int cantidad = 0;
-			for(int i = 0; i<7; i++){
-				printf("Seleccione un horario en que desea que la sala opere o 0 para salir: ");
+			mostrarHorarios(H);
+			while(free){
+				printf("\n \t1 \tAgregar un horario a la sala\n");
+				printf("\t0 \tSalir\n");
+				printf("\tSeleccione una accion a realizar: ");
 				scanf("%i", &accion);
-				if(accion == 0){
-					cantidad = i;
-					break;
+				
+				if(accion == 1){
+						printf("\n\tIngrese el dia: ");
+						scanf(" %c", &tempHorario.dia);
+						printf("\tIngrese la hora de inicio: ");
+						scanf("%i", &tempHorario.horaApertura);
+						printf("\tIngrese la hora de finalizacion ");
+						scanf("%i", &tempHorario.horaCierre);
+						insertarHorario(H1,tempHorario);
 				}
-				h[i] = horarios[accion-1];
+				if(accion != 1){
+						break;
+				}
 			}
-			tempSala.horarios[0] = h[0];
-			for(int i = 0; i < cantidad; i++){
-				tempSala.horarios[i] = h[i];
-			}
-
-			mostrarHorarios(tempSala.horarios,cantidad);
-			tempSala.nHorarios = cantidad;
-			printf("CANTIDAD %i\n", cantidad );
-			insertarSala(S,tempSala);
-
+			tempSala.horarios = H1;
 		}
-
+		
 		if(accion == 5){
 			mostrarSalas(S);
 		}
-
+		
 		if(accion == 6){
 			char id[10];
 			char ubicacion[50]; 
@@ -745,8 +731,8 @@ int main() {
 				}
 			}	
 		}
-
-		if(accion == 7){
+		
+		if(accion == 7){//INCOMPLETO 
 			char id[10];
 			int calificacion;
 			printf("\tInserte el ID de la sala a calificar: ");
@@ -763,23 +749,38 @@ int main() {
 			scanf("%10s", id);
 			consultarSala(S,id);	
 		}
-
-
-
+		
 		if(accion == 9){
+			printf("\tInserte el CARNET de la persona que hace la reserva: ");
+			scanf("%i",&tempReserva.carnetEstudiante);
+
 			printf("\tInserte DIA de la reserva: ");
+			scanf("%i",&tempReserva.dia);
+
 			printf("\tInserte MES de la reserva: ");
-			printf("\tInserte AÑO de la reserva: ");
+			scanf("%i",&tempReserva.mes);
+
 			printf("\tInserte HORA DE INICIO de la reserva: ");
-			printf("\tInserte HORA FINALIZACION de la reserva: ");
-			printf("\tInserte CAPACIDAD REQUERIDA para la reserva: ");
-
+			scanf("%i",&tempReserva.horaInicio);
 			
+			printf("\tInserte HORA FINALIZACION de la reserva: ");
+			scanf("%i",&tempReserva.horaFinal);
+
+			printf("\tInserte CAPACIDAD MINIMA REQUERIDA para la reserva: ");
+			scanf("%i",&tempReserva.capacidadMinima);
+
+			printf("\tInserte algun RECURSO REQUERIDO para la reserva: ");
+			scanf("%[^\n]",tempReserva.recurso);
+
+			printf("\tInserte el MOTIVO de la reserva: ");
+			scanf("%[^\n]",tempReserva.asunto);				
 		}
-
-
+		
+		if(accion == 11){
+			mostrarReservas(V);
+		}
 	}
+	
 
-
-    return 0;
+	return 0;
 }

@@ -159,6 +159,7 @@ void insertarSala(listaSalas *L, sala s){
 		L->inicio->sala = s;
 		L->inicio->siguiente=NULL;
 		if(escritura.is_open() && consulta.is_open()){
+		
 			
 		escritura<<s.id<<" "<<s.ubicacion<<" "<<s.estado<<" "" "<<s.calificacion<<" "<<s.capMaxima<<endl;
 		while(!consulta.eof()){
@@ -264,29 +265,8 @@ void mostrarSalas(listaSalas *S){
 		mostrarRecursos(i->sala.recursos);
 	}
 }
-void mostrarEstudiantes2(){
-	  ifstream lectura;
-    lectura.open("Estudiante.txt",ios::out|ios::in);
-    if(lectura.is_open()){
-        cout<<"Registros del Archivo alumnos.txt"<<endl;
-        cout<<"________________________________"<<endl;
-        lectura>>estudiante->calificacion;
-        while(!lectura.eof()){
-            lectura>>estudiante.carnet>>estudiante.carrera>>estudiante.carnet>>estudiante.telefono>>estudiante.calificacion>>estudiante.nombre;
-            cout<<"Clave: "<<estudiante->carnet<<endl;
-            cout<<"Nombre: "<<estudiante->nombre<<endl;
-            cout<<"Semestre: "<<estudiante->carrera<<endl;
-            cout<<"Grupo: "<<estudiante->email<<endl;
-            cout<<"Edad: "<<estudiante->calificacion<<endl;
-            lectura>>estudiante->carnet;
-            cout<<"________________________________"<<endl;
-        }
-    }else{
-        cout<<"Error, el Archivo No se Pudo Abrir, No ha sido creado"<<endl;
-    }
-    lectura.close();
-}//Fin funcion consultas
-}
+
+
 
 void mostrarEstudiantes(listaEstudiantes *L){
 	
@@ -338,6 +318,54 @@ int buscarSala(listaSalas *S, char id[10]){
 	return 1;
 
 }
+void CargarArchivoEstudiantes(){
+	nodoEstudiante *p,*q,*listaEstudiantes;
+	ifstream inputFile;
+	listaEstudiantes = NULL;
+	 p = new nodoEstudiante; 
+	  inputFile.open("Estudiante.txt");
+	  while (! inputFile.eof()){
+	   p = new nodoEstudiante;
+	   inputFile >>p->estudiante.carnet>> p->estudiante.nombre>>p->estudiante.carrera>>p->estudiante.email>>p->estudiante.telefono>>p->estudiante.calificacion;
+	   cout <<p->estudiante.carnet<< "/ " <<p->estudiante.nombre<< " /" <<p->estudiante.carrera<< "/ "<<p->estudiante.calificacion<< "/ "<<p->estudiante.email<< "/ "<<p->estudiante.email<< "/ "<<p->estudiante.email<< "/ "<<endl;
+	   
+	   if(listaEstudiantes!= NULL){
+	   q = listaEstudiantes;
+	   while (q->siguiente!= NULL)
+            q = q->siguiente;
+         q->siguiente = p;
+      }
+   
+   inputFile.close();  
+}
+}
+void CargarArchivoSalas(){
+	nodoEstudiante *p,*q,*listaEstudiantes;
+	ifstream inputFile;
+	listaEstudiantes = NULL;
+	 p = new nodoEstudiante; 
+	  inputFile.open("Estudiante.txt");
+	  while (! inputFile.eof()){
+	   p = new nodoEstudiante;
+	   inputFile >>p->estudiante.carnet>> p->estudiante.calificacion>>p->estudiante.carrera;
+	   cout <<p->estudiante.carnet << " " << p->estudiante.calificacion << " " << p->estudiante.carrera<< " "<<endl;
+	   if (listaEstudiantes == NULL){
+	   listaEstudiantes = p;
+	   }else{
+	   q = listaEstudiantes;
+	   while (q->siguiente!= NULL)
+            q = q->siguiente;
+         q->siguiente = p;
+      }
+   
+   inputFile.close();  
+}
+}
+
+	
+
+
+
 //--------------- MAIN Y PRUEBAS
 
 int main() {
@@ -465,7 +493,8 @@ int main() {
 			
 			tempEstudiante.calificacion =100;
 
-			insertarEstudiante(L,tempEstudiante);			
+			insertarEstudiante(L,tempEstudiante);
+			
 		}
 
 		if(accion == 2){
@@ -476,8 +505,8 @@ int main() {
 		}
 
 		if(accion == 3){
-			mostrarEstudiantes(L);	
-			mostrarEstudiantes2()
+			//mostrarEstudiantes(L);
+			CargarArchivoEstudiantes();
 		}
 
 		if(accion == 4){

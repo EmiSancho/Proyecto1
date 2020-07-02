@@ -8,7 +8,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>     
+#include <time.h>
+
+
+  
 
 //--------------- DEFINICION DE ESTRUCTURAS
 typedef struct nodoEstudiante nodoEstudiante;
@@ -130,6 +133,7 @@ typedef struct reserva
 	char idSala[10];
 	char asunto[50];
 	int id;
+	char diaLetra;
 	int dia;
 	int mes;
 	int horaInicio;
@@ -159,8 +163,52 @@ listaReservas *listaReservasNueva(){
 }
 
 //------INCIDENTE
+typedef struct incidente
+{
+	char idSala[10];
+	int idReserva;
+	char descripcion[150];
+	time_t fecha;
+}incidente;
 
+struct nodoIncidente
+{
+	incidente incidente;
+	nodoIncidente *siguiente;
+};
+
+ typedef struct listaIncidentes
+ {
+ 	nodoIncidente *inicio;
+ }listaIncidentes;
+
+listaIncidentes *listaIncidentesNueva(){
+	listaIncidentes *L;
+	L = (listaIncidentes*)malloc(sizeof(listaIncidentes));
+	L->inicio = NULL;
+	return L;
+}
 //--------------- INSERCIONES
+
+void insertarIncidente(listaIncidentes *L, incidente i){
+	nodoIncidente *n, *aux;
+	if(L->inicio == NULL){
+		L->inicio = (nodoIncidente*)malloc(sizeof(nodoIncidente));
+		L->inicio->incidente = i;
+		L->inicio->siguiente = NULL;
+		return;
+	}else{
+		n = L->inicio;
+		while(n != NULL){
+			aux = n;
+			n = n->siguiente;
+		}
+	}
+	aux->siguiente = (nodoIncidente*)malloc(sizeof(nodoIncidente));
+	aux->siguiente->incidente = i;
+	aux->siguiente->siguiente = NULL;
+}
+
 void insertarReserva(listaReservas *L, reserva r){
 	nodoReserva *n, *aux;
 	if(L->inicio == NULL){
@@ -171,13 +219,8 @@ void insertarReserva(listaReservas *L, reserva r){
 	}else{
 		n = L->inicio;
 		while(n!=NULL){
-			// if(strcmp(aux->reserva.idSala,r.idSala)==0 && aux->reserva.horaInicio == r.horaInicio){
-			// 	printf("\n LA SALA YA ESTA RESERVADA PARA ESA HORA\n");
-			// 	return;
-			// }else{
 				aux = n;
 				n = n->siguiente;
-			// }
 		}	
 
 		aux->siguiente = (nodoReserva*)malloc(sizeof(nodoReserva));
@@ -285,11 +328,27 @@ void insertarHorario(listaHorarios *L, horario h){
 
 
 //--------------- IMPRESIONES
+void mostrarIncidentes(listaIncidentes *L){
+	printf("\nLista de incidentes reportados:\n");
+	for(nodoIncidente *i = L->inicio; i!=NULL; i = i->siguiente){
+		printf("En la sala: %s, durante la reserva: %i, %s, el dia: %s.\n",i->incidente.idSala, i->incidente.idReserva, i->incidente.descripcion, ctime(&i->incidente.fecha) );
+	}
+}
+
 void mostrarHorarios(listaHorarios *L){
 	printf("\nLos horarios de operacion disponibles son:\n");
 	int index = 0;
 	for(nodoHorario *i = L->inicio; i!=NULL; i=i->siguiente){
 		printf("\t %i \t %c de %i a %i.\n",index+1,i->horario.dia, i->horario.horaApertura,i->horario.horaCierre );
+		index++;
+	}
+	printf("\n");
+}
+void mostrarHorariosDeSala(listaHorarios *L){
+	printf(" Horarios:");
+	int index = 0;
+	for(nodoHorario *i = L->inicio; i!=NULL; i=i->siguiente){
+		printf(" %c de %i a %i.",i->horario.dia, i->horario.horaApertura,i->horario.horaCierre );
 		index++;
 	}
 	printf("\n");
@@ -300,7 +359,7 @@ void mostrarRecursos(listaRecursos *R){
 	for(nodoRecurso *i = R->inicio; i!=NULL; i = i->siguiente){
 		printf(" %s", i->recurso);
 	}
-	printf(".");
+	printf(",");
 	
 }
 
@@ -309,7 +368,7 @@ void mostrarSalas(listaSalas *S){
 	for(nodoSala *i = S->inicio; i!=NULL; i = i->siguiente){
 		printf("Id: %s, Ubicacion: %s, Capacidad: %i, Estado: %i, Calificacion: %i,", i->sala.id, i->sala.ubicacion, i->sala.capMaxima, i->sala.estado, i->sala.calificacion );
 		mostrarRecursos(i->sala.recursos);
-		mostrarHorarios(i->sala.horarios);
+		mostrarHorariosDeSala(i->sala.horarios);
 	}
 }
 
@@ -328,15 +387,14 @@ void mostrarReservas(listaReservas *C){
 	nodoReserva *aux = C->inicio;
 	printf("\nLa lista de reservas es:\n");
 	for(nodoReserva *i = C->inicio; i!=NULL ; i=i->siguiente){
-		printf("\nEstudiante: %i, sala: %s, asunto: %s, participantes: %i, fecha: %i/%i, inicia: %i, finaliza: %i, recurso: %s, estado: %i. \n",i->reserva.carnetEstudiante, i->reserva.idSala, i->reserva.asunto,i->reserva.capacidadMinima,i->reserva.dia, i->reserva.mes, i->reserva.horaInicio, i->reserva.horaFinal, i->reserva.recurso, i->reserva.estado );
+		printf("ID: %i, Estudiante: %i, sala: %s, asunto: %s, participantes: %i, fecha: %i/%i, inicia: %i, finaliza: %i, recurso: %s, estado: %i. \n",i->reserva.id ,i->reserva.carnetEstudiante, i->reserva.idSala, i->reserva.asunto,i->reserva.capacidadMinima,i->reserva.dia, i->reserva.mes, i->reserva.horaInicio, i->reserva.horaFinal, i->reserva.recurso, i->reserva.estado );
 	}
 	
 }
 
 
 
-//--------------- CONSULTAS  
-
+//--------------- CONSULTAS / BUSQUEDAS
 void consultarEstudiante(listaEstudiantes *L, int c){
 	nodoEstudiante *aux = L->inicio;
 	while(aux != NULL){
@@ -361,16 +419,97 @@ nodoSala* buscarSala(listaSalas *S, char id[10]){
 	return NULL;
 }
 
+int buscarRecurso(listaRecursos *R, char recurso[50]){
+	nodoRecurso *aux = R->inicio;
+	while(aux != NULL){
+		if(strcmp(aux->recurso,recurso) == 0){
+			return 0;
+		}
+		aux = aux->siguiente;
+	}
+	return 1;
+}
+
+int buscarHorario(listaHorarios *L, int hi, int hf, char dia){
+	nodoHorario *aux = L->inicio;
+	while(aux != NULL){
+		if(aux->horario.horaApertura <= hi && aux->horario.horaCierre >= hf && aux->horario.dia == dia){
+			return 0;
+		}
+		aux = aux->siguiente;
+	}
+
+	return 1;
+}
 
 void consultarSala(listaSalas *S, char id[10]){
 	nodoSala *aux = buscarSala(S, id);
 	if(aux != NULL){
 		printf("Sala: %s, Ubicacion: %s, Capacidad: %i, Estado: %i, Calificacion: %i,", id, aux->sala.ubicacion, aux->sala.capMaxima, aux->sala.estado, aux->sala.calificacion );
 		mostrarRecursos(aux->sala.recursos);
-		mostrarHorarios(aux->sala.horarios);
+		mostrarHorariosDeSala(aux->sala.horarios);
 	}
 }
 
+void consultarIncidentesPorSala(listaIncidentes *L, char idSala[10]){
+	nodoIncidente *i = L->inicio;
+	printf("Lista de incidentes de la sala:\n");
+	while(i != NULL){
+		if(strcmp(i->incidente.idSala, idSala) == 0){
+			printf("Id de reserva: %i, indicente: %s, fecha: %s. \n", i->incidente.idReserva, i->incidente.descripcion, ctime(&i->incidente.fecha));
+		}
+		i = i->siguiente;
+	}
+}
+
+void consultarReservasPorEstudiante(listaReservas *L, int carnet){
+	nodoReserva *i = L->inicio;
+	printf("Las reservas en %i son: ", carnet);
+	while(i != NULL){
+		if(i->reserva.carnetEstudiante == carnet){
+			printf("Sala: %s, asunto: %s, participantes: %i, fecha: %i/%i, inicia: %i, finaliza: %i, recurso: %s, estado: %i. \n", i->reserva.idSala, i->reserva.asunto,i->reserva.capacidadMinima,i->reserva.dia, i->reserva.mes, i->reserva.horaInicio, i->reserva.horaFinal, i->reserva.recurso, i->reserva.estado );
+		}
+		i = i->siguiente;
+	}
+}
+
+void consultarReservasPorSala(listaReservas *L, char idSala[10]){
+	nodoReserva *i = L->inicio;
+	printf("Las reservas en %s son: ", idSala);
+	while(i != NULL){
+		if(strcmp(i->reserva.idSala,idSala) == 0){
+			printf("Estudiante: %i, asunto: %s, participantes: %i, fecha: %i/%i, inicia: %i, finaliza: %i, recurso: %s, estado: %i. \n", i->reserva.carnetEstudiante, i->reserva.asunto,i->reserva.capacidadMinima,i->reserva.dia, i->reserva.mes, i->reserva.horaInicio, i->reserva.horaFinal, i->reserva.recurso, i->reserva.estado );
+		}
+		i = i->siguiente;
+	}
+	printf("\n");
+}
+
+
+void consultarSalaParaReserva(listaSalas *S, char recurso[50], int capacidad, int hi, int hc, char diaLetra){
+	printf("\nLas salas que cumplen recurso, capacidad y horario son:\n");
+	nodoSala *aux = S->inicio;
+	while(aux != NULL){
+		if(buscarRecurso(aux->sala.recursos, recurso) == 0 && aux->sala.capMaxima >= capacidad){
+			if(buscarHorario(aux->sala.horarios,hi,hc, diaLetra) == 0){
+				consultarSala(S, aux->sala.id);	
+			}
+		}
+		aux = aux->siguiente;
+	}
+	printf("\n");
+}
+
+int getCarnetDeReserva(listaReservas *L, int id){
+	nodoReserva *aux = L->inicio;
+	while(aux != NULL){	
+		if(aux->reserva.id == id){
+			return aux->reserva.carnetEstudiante;
+		}
+		aux = aux->siguiente;
+	}
+	return 0;
+}
 
 //--------------- MODIFICACIONES
 void modificarSala(listaSalas *S, char id[10], int estado, char ubicacion[50]){
@@ -381,7 +520,34 @@ void modificarSala(listaSalas *S, char id[10], int estado, char ubicacion[50]){
 	}
 }
 
-//--------------- ELIMINACIONES
+void aumentarCantidadDeReservasDeLaSala(listaSalas *S, char id[10]){
+	nodoSala *aux = buscarSala(S, id);
+	if(aux != NULL){
+		aux->sala.reservas++;
+	}
+}
+
+void disminuirCalificacionDeEstudiante(listaEstudiantes *L, int carnet){
+	nodoEstudiante *aux = L->inicio;
+	while(aux != NULL){
+		if(aux->estudiante.carnet == carnet){
+			aux->estudiante.calificacion--;
+		}
+		aux = aux->siguiente;
+	}
+}
+
+//--------------- ELIMINACIONES / CANCELACIONES
+void cancelarReserva(listaReservas *L, int id){
+	nodoReserva*aux = L->inicio;
+	while(aux != NULL){
+		if(aux->reserva.id == id){
+			aux->reserva.estado = 3;
+		}
+		aux = aux->siguiente;
+	}
+}
+
 void eliminarRecurso(listaRecursos *R, char recurso[50]){
 	nodoRecurso *aux = R->inicio, *anterior = NULL;
 
@@ -412,6 +578,8 @@ void eliminarRecurso(listaRecursos *R, char recurso[50]){
 //--------------- MAIN Y PRUEBAS
 int main() {
 	//---NECESARIOS
+	// time_t my_time = time(NULL); 
+ //    printf("%s", ctime(&my_time)); 
 	srand(time(NULL));
 	int accion;
 	int IdReservas = 5;
@@ -420,19 +588,29 @@ int main() {
 	listaSalas *S;
 	listaHorarios *H;
 	listaReservas *V;
+	listaIncidentes *I;
 	
 	L = listaEstudiantesNueva();
 	S = listaSalasNueva();
 	H = listaHorariosNueva();
 	V = listaReservasNueva();
-	
-	char tempRecurso[50];
+	I = listaIncidentesNueva();
+
+	char tempRecurso[50]; 
+	char tempUbicacion[50];
+	char tempSalaID[10]; 
+	char tempDescripcion[150];   
 	char tempDia;
+	int tempCarnet = 0;
+	int tempReservaID = 0;
+	int tempEstado = 0;
 	estudiante tempEstudiante;
 	sala tempSala;
 	horario tempHorario;
 	reserva tempReserva; 
-	
+	incidente tempIncidente;
+
+			
 	
 	//---------------- ESTO ES QUE LO QUE TIENE QUE SER CARGADO DESDE EL TXT
 	//ESTUDIANTES
@@ -475,7 +653,7 @@ int main() {
 	insertarRecurso(r4,"5 sillas"); insertarRecurso(r4,"1 mesa");
 	insertarRecurso(r5,"Pizarra"); insertarRecurso(r5,"3 Marcadores");
 	insertarRecurso(r6,"Mesa"); insertarRecurso(r6,"Bancos");
-	insertarRecurso(r7,"Libros"); insertarRecurso(r7,"2 puff");
+	insertarRecurso(r7,"Pizarra"); insertarRecurso(r7,"2 puff");
 	insertarRecurso(r8,"Proyector"); insertarRecurso(r8,"Fondo blanco");
 	insertarRecurso(r9,"Pantalla"); insertarRecurso(r9,"Computadora");
 	
@@ -540,17 +718,26 @@ int main() {
 	insertarSala(S,s10);
 
 	//RESERVAS
-	reserva n1 = {20201,"SAL-001","Estudiar Calculo",1, 1, 7, 10,11,5,"Pantalla",rand()%3,0};
-	reserva n2 = {20202,"SAL-002","Estudiar Discreta",2, 2, 7, 11,12,6,"Borrador", rand()%3,0};
-	reserva n3 = {20203,"SAL-003","Jugar Halo",3, 3, 7, 12,13,7,"12 Tizas", rand()%3,0};
-	reserva n4 = {20204,"SAL-004","Programar",4, 4, 7, 13,15,8,"2 puff", rand()%3,0};
-	reserva n5 = {20205,"SAL-005","Investigar",5, 5, 7, 14,17,9,"Pizarra", rand()%3,0};
+	reserva n1 = {20201,"SAL-001","Estudiar Calculo",1,'L', 1, 7, 10,11,5,"Pantalla",1,0};
+	reserva n2 = {20202,"SAL-002","Estudiar Discreta",2,'K', 2, 7, 11,12,6,"Borrador", 2,0};
+	reserva n3 = {20203,"SAL-003","Jugar Halo",3,'M', 3, 7, 12,13,7,"12 Tizas", 1,0};
+	reserva n4 = {20204,"SAL-004","Programar",4, 'J',4, 7, 13,15,8,"2 puff", 3,0};
+	reserva n5 = {20205,"SAL-005","Investigar",5,'V', 5, 7, 14,17,9,"Pizarra", 1,0};
+	reserva n6 = {20206,"SAL-001","Estudiar Calculo",6,'L', 1, 7, 11,12,5,"Pantalla",1,0};
+	reserva n7 = {20201,"SAL-002","Estudiar Calculo",7,'K', 2, 7, 12,13,5,"Pantalla",2,0};
+	reserva n8 = {20201,"SAL-002","Estudiar Calculo",8,'M', 3, 7, 12,14,5,"Pantalla",3,0};
+	reserva n9 = {20201,"SAL-004","Estudiar Calculo",9,'J', 4, 7, 11,13,5,"Pantalla",1,0};
 	insertarReserva(V,n1);
 	insertarReserva(V,n2);
 	insertarReserva(V,n3);
 	insertarReserva(V,n4);
 	insertarReserva(V,n5);
-	
+	insertarReserva(V,n6);
+	insertarReserva(V,n7);
+	insertarReserva(V,n8);
+	insertarReserva(V,n9);
+
+
 	//---------------- FIN DE LO QUE TIENE QUE SER CARGADO DESDE EL TXT
 	
 	
@@ -571,8 +758,9 @@ int main() {
 		printf("12\t Cancelar reserva.\n");
 		printf("13\t Atender reserva.\n");
 		printf("14\t Registrar incidente.\n");
-		printf("15\t Consultar incidentes.\n");
-		printf("16\t Reportes.\n");
+		printf("15\t Consultar incidente por sala.\n");
+		printf("16\t Mostrar lista de incidentes.\n");	
+		printf("17\t Reportes.\n");
 		printf("0\t Salir.\n");
 		printf("Seleccione una accion a realizar: ");
 		scanf("%i", &accion);
@@ -608,9 +796,9 @@ int main() {
 		
 		if(accion == 2){
 			printf("Inserte el numero de carnet a consultar: ");
-			int carnet;
-			scanf("%i", &carnet);
-			consultarEstudiante(L,carnet);
+			scanf("%i", &tempCarnet);
+			consultarEstudiante(L,tempCarnet);
+			consultarReservasPorEstudiante(V, tempCarnet);
 		}
 
 		if(accion == 3){
@@ -658,6 +846,7 @@ int main() {
 			tempSala.recursos = R;
 			
 			mostrarHorarios(H);
+
 			while(free){
 				printf("\n \t1 \tAgregar un horario a la sala\n");
 				printf("\t0 \tSalir\n");
@@ -685,25 +874,19 @@ int main() {
 		}
 		
 		if(accion == 6){
-			char id[10];
-			char ubicacion[50]; 
-			int estado = 0;
-			char recurso[50];
-
 			printf("\tInserte el ID de la sala a modificar: ");
-			scanf("%10s", id);
+			scanf("%10s", tempSalaID);
 			
 			printf("\tInserte la nueva UBICACION de la sala: ");
-			fgets(ubicacion, 50, stdin);
-			scanf("%[^\n]", ubicacion);
+			fgets(tempUbicacion, 50, stdin);
+			scanf("%[^\n]", tempUbicacion);
 			
 			printf("\tInserte el nuevo ESTADO de la sala: ");
-			scanf("%i", &estado);
+			scanf("%i", &tempEstado);
 			
-			modificarSala(S, id, estado, ubicacion );
-			nodoSala *mySala = buscarSala(S, id);
-
-
+			modificarSala(S, tempSalaID, tempEstado, tempUbicacion );
+			
+			nodoSala *mySala = buscarSala(S, tempSalaID);
 			while(free){
 				printf("\n");
 				mostrarRecursos(mySala->sala.recursos);
@@ -716,15 +899,15 @@ int main() {
 
 				if(accion == 1){
 					printf("\n\tNombre del recurso a eliminar: ");
-					fgets(recurso, 50, stdin);
-					scanf("%[^\n]", recurso);
-					eliminarRecurso(mySala->sala.recursos, recurso);
+					fgets(tempRecurso, 50, stdin);
+					scanf("%[^\n]", tempRecurso);
+					eliminarRecurso(mySala->sala.recursos, tempRecurso);
 				}
 				if(accion == 2){
 					printf("\n\tNombre del recurso a agregar: ");
-					fgets(recurso, 50, stdin);
-					scanf("%[^\n]", recurso);
-					insertarRecurso(mySala->sala.recursos, recurso);
+					fgets(tempRecurso, 50, stdin);
+					scanf("%[^\n]", tempRecurso);
+					insertarRecurso(mySala->sala.recursos, tempRecurso);
 				}
 				if(accion == 0){
 					break;
@@ -733,11 +916,10 @@ int main() {
 		}
 		
 		if(accion == 7){//INCOMPLETO 
-			char id[10];
 			int calificacion;
 			printf("\tInserte el ID de la sala a calificar: ");
-			scanf("%10s", id);
-			nodoSala *mySala = buscarSala(S, id);
+			scanf("%10s", tempSalaID);
+			nodoSala *mySala = buscarSala(S, tempSalaID);
 			printf("\tInserte la calificacion: ");
 			scanf("%i",&calificacion);
 			mySala->sala.calificacion = calificacion;
@@ -745,16 +927,20 @@ int main() {
 		
 		if(accion == 8){
 			printf("\tInserte el ID de la sala a consultar: ");
-			char id[10];
-			scanf("%10s", id);
-			consultarSala(S,id);	
+			
+			scanf("%10s", tempSalaID);
+			consultarSala(S,tempSalaID);
+			consultarReservasPorSala(V,tempSalaID);	
 		}
 		
 		if(accion == 9){
 			printf("\tInserte el CARNET de la persona que hace la reserva: ");
 			scanf("%i",&tempReserva.carnetEstudiante);
 
-			printf("\tInserte DIA de la reserva: ");
+			printf("\tInserte DIA de la reserva (ejemplo L,K,M,J,V,S,D): ");
+			scanf(" %c",&tempReserva.diaLetra);
+
+			printf("\tInserte DIA de la reserva (ejemplo 1,2,3,4...): ");
 			scanf("%i",&tempReserva.dia);
 
 			printf("\tInserte MES de la reserva: ");
@@ -770,15 +956,67 @@ int main() {
 			scanf("%i",&tempReserva.capacidadMinima);
 
 			printf("\tInserte algun RECURSO REQUERIDO para la reserva: ");
+			fgets(tempReserva.recurso, 50, stdin);
 			scanf("%[^\n]",tempReserva.recurso);
 
 			printf("\tInserte el MOTIVO de la reserva: ");
-			scanf("%[^\n]",tempReserva.asunto);				
+			fgets(tempReserva.asunto, 50, stdin);
+			scanf("%[^\n]",tempReserva.asunto);
+
+			tempReserva.prioridad = rand()%3;
+			consultarSalaParaReserva(S, tempReserva.recurso, tempReserva.capacidadMinima, tempReserva.horaInicio, tempReserva.horaFinal, tempReserva.diaLetra);		
+			printf("\tInserte el ID de la sala que desea reservar: ");
+			scanf("%10s", tempReserva.idSala);
+
+			insertarReserva(V,tempReserva);			
 		}
 		
+		if(accion == 10){
+			printf("\tInserte el CARNET del estudiante a consultar: ");
+			scanf("%i",&tempCarnet);
+			consultarReservasPorEstudiante(V, tempCarnet);
+		}
+
 		if(accion == 11){
 			mostrarReservas(V);
 		}
+
+		if(accion == 12){
+			printf("\tInserte el ID de la reserva a cancelar: ");
+			scanf("%i",&tempReservaID);
+			cancelarReserva(V,tempReservaID);
+			tempCarnet = getCarnetDeReserva(V,tempReservaID);
+			disminuirCalificacionDeEstudiante(L,tempCarnet);
+		}
+
+		if(accion == 14){
+			printf("\tInsert el ID DE LA SALA donde se dio el incidente: ");
+			fgets(tempIncidente.idSala, 10, stdin);
+			scanf("%10s", tempIncidente.idSala);
+			
+			printf("\tInsert el ID DE LA RESERVA durante la cual se dio el incidente: ");
+			scanf("%i", &tempIncidente.idReserva);
+			
+			printf("\tDescriba el incidente: ");
+			fgets(tempIncidente.descripcion, 150, stdin);
+			scanf("%[^\n]", tempIncidente.descripcion);
+			
+			tempIncidente.fecha = time(NULL);
+			insertarIncidente(I, tempIncidente);	
+		}
+
+		if(accion == 15){
+			printf("\tInsert el ID DE LA SALA a consultar: ");
+			fgets(tempSalaID, 10, stdin);
+			scanf("%10s", tempSalaID);
+			consultarIncidentesPorSala(I,tempSalaID);
+		}
+
+		if(accion == 16){
+			mostrarIncidentes(I);
+		}
+
+		
 	}
 	
 
